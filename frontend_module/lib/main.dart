@@ -11,13 +11,19 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Polyglot',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const Homepage()
-    );
+        title: 'Polyglot',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          brightness: Brightness.light,
+          primarySwatch: Colors.blue,
+        ),
+        darkTheme: ThemeData(
+          brightness: Brightness.dark,
+          primarySwatch: Colors.blue,
+        ),
+        themeMode: ThemeMode
+            .dark, // You can also use ThemeMode.system to follow the system setting
+
+        home: const Homepage());
   }
 }
