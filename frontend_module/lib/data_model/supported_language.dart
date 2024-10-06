@@ -13,6 +13,8 @@ final List<Language> supportedLanguages = [
   Language(name: 'Spanish', code: 'es'),
   Language(name: 'French', code: 'fr'),
   Language(name: 'German', code: 'de'),
-  Language(name: 'Chinese', code: 'zh'),
+  Language(name: 'Italian', code: 'it'),
+  Language(name: 'Kannada', code: 'kn'),
+  Language(name: 'Gujarati', code: 'gu'),
   Language(name: 'Hindi', code: 'hi'),
 ];

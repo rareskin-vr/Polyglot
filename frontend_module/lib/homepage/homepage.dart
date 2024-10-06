@@ -15,13 +15,21 @@ class _HomepageState extends State<Homepage> {
   List<MessageData> _messages = [];
   final ScrollController _scrollController = ScrollController();
   bool _isLoading = false;
-  Language _selectedLanguage = Language(name: 'Portuguese', code: 'en');
+  Language _selectedLanguage = Language(name: 'English', code: 'en');
   Language _translationLanguage = Language(name: 'Hindi', code: 'hi');
 
   void _updateState(List<MessageData> messages, bool isLoading) {
     setState(() {
       _messages = messages;
       _isLoading = isLoading;
+    });
+  }
+
+  void _swapLanguages() {
+    setState(() {
+      final temp = _selectedLanguage;
+      _selectedLanguage = _translationLanguage;
+      _translationLanguage = temp;
     });
   }
 
@@ -51,7 +59,8 @@ class _HomepageState extends State<Homepage> {
                         borderRadius:
                             const BorderRadius.all(Radius.circular(28))),
                     child: Padding(
-                      padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.007),
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.width * 0.007),
                       child: Row(
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -63,10 +72,13 @@ class _HomepageState extends State<Homepage> {
                               _selectedLanguage = language;
                             });
                           }),
-                          Icon(
-                            Icons.compare_arrows,
-                            size:  MediaQuery.of(context).size.height *0.04 ,
-                            color: Colors.grey.withOpacity(0.3),
+                          GestureDetector(
+                            onTap: _swapLanguages,
+                            child: Icon(
+                              Icons.compare_arrows,
+                              size: MediaQuery.of(context).size.height * 0.04,
+                              color: Colors.grey.withOpacity(0.3),
+                            ),
                           ),
                           MessageHelper.buildLanguageSelectionButton(
                               context,
@@ -122,7 +134,31 @@ class _HomepageState extends State<Homepage> {
                                               // Label text color
                                               ),
                                         ),
-                                        Text(_messages[index].message)
+                                        Text(_messages[index].message),
+                                        _messages[index].pronunciation != null
+                                            ? Text.rich(TextSpan(
+                                                text:
+                                                    "Pronunciation: ", // Text before the pronunciation
+                                                style: const TextStyle(
+                                                    fontSize: 12,
+                                                    letterSpacing: 1,
+                                                    color: Colors.grey
+                                                  // Label text color
+                                                ),
+                                                children: <TextSpan>[
+                                                  TextSpan(
+                                                    text: _messages[index]
+                                                        .pronunciation!, // Pronunciation text
+                                                    style: TextStyle(
+                                                      fontStyle: FontStyle
+                                                          .italic, // You can style the pronunciation text differently
+                                                      color: Colors
+                                                          .blue, // Change color if needed
+                                                    ),
+                                                  ),
+                                                ],
+                                              ))
+                                            : SizedBox.shrink(),
                                       ],
                                     ),
                                   ),

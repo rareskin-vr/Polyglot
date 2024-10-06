@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import "../data_model/message_data.dart";
 import '../data_model/supported_language.dart';
+import 'package:http/http.dart' as http;
 
 class MessageHelper {
   static void showLanguageDialog(BuildContext context,
@@ -25,10 +28,50 @@ class MessageHelper {
     );
   }
 
-  static Future<String> fetchTranslation(String originalMessage) async {
-    // Simulate a delay and translation result
-    await Future.delayed(const Duration(seconds: 1));
-    return 'Translated message in $originalMessage';
+  static Future<Map<String, dynamic>> fetchTranslation(
+      String message, List<Language> selectedLanguage) async {
+    try {
+      final response = await http.post(
+          Uri.parse(
+              'http://192.168.31.80:9090/api/translate/'), // Replace with your API URL
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode(<String, String>{
+            'text': message,
+            'source_lang': selectedLanguage[0].code,
+            'target_lang': selectedLanguage[1].code,
+          }));
+
+      if (response.statusCode == 200) {
+        // Assume the response contains a JSON object with "translation" and "pronunciation" fields
+        final jsonResponse = jsonDecode(response.body);
+        return {
+          'status': 200,
+          'translation': jsonResponse['translation'],
+          'pronunciation': jsonResponse['pronunciation'],
+        };
+      } else if (response.statusCode == 400) {
+        // If the response status is 400, return an error message
+        return {
+          'status': 400,
+          'error': 'Error: Invalid request or message format',
+        };
+      } else {
+        // Handle other status codes
+        return {
+          'status': response.statusCode,
+          'error': 'Unexpected error occurred',
+        };
+      }
+    } catch (e) {
+      // If an exception occurs (e.g., network error)
+      return {
+        'status': 500,
+        'error':
+            'Failed to fetch translation. Please check your network connection.',
+      };
+    }
   }
 
   // Add user message and handle translation
@@ -55,10 +98,20 @@ class MessageHelper {
       await Future.delayed(const Duration(milliseconds: 100));
       scrollController.jumpTo(scrollController.position.maxScrollExtent);
 
-      // Simulate the translation process
-      String translatedMessage = await fetchTranslation(originalMessage);
-      MessageData response =
-          MessageData(user: UserType.translation, message: translatedMessage);
+      Map<String, dynamic> translatedMessage =
+          await fetchTranslation(originalMessage, selectedLanguage);
+      MessageData response;
+      if (translatedMessage['status'] == 200) {
+        response = MessageData(
+            user: UserType.translation,
+            message: translatedMessage['translation'],
+            pronunciation: translatedMessage['pronunciation']);
+      } else {
+        response = MessageData(
+          user: UserType.error,
+          message: translatedMessage['error'],
+        );
+      }
 
       // Update the state with the translated message and unlock UI
       messages.add(response);
@@ -79,8 +132,7 @@ class MessageHelper {
         MessageHelper.showLanguageDialog(
           context,
           (selectedLanguage) {
-            onLanguageSelected(
-                selectedLanguage);
+            onLanguageSelected(selectedLanguage);
           },
           user,
         );
@@ -91,16 +143,16 @@ class MessageHelper {
         ),
         elevation: 2,
       ),
-      child: SizedBox(width:MediaQuery.of(context).size.width *0.2 ,
+      child: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.2,
         child: Center(
           child: Text(
             selectedLanguage.name.toUpperCase(), // Display selected language
             style: TextStyle(
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1,
-              fontSize: MediaQuery.of(context).size.width *0.036,
-                overflow: TextOverflow.ellipsis
-            ),
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1,
+                fontSize: MediaQuery.of(context).size.width * 0.036,
+                overflow: TextOverflow.ellipsis),
           ),
         ),
       ),
